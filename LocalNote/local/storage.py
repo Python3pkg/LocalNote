@@ -1,6 +1,7 @@
 import json, os, time, sys, re
 from os.path import join, exists
 import chardet
+from functools import reduce
 
 CONFIG_DIR = 'user.cfg'
 
@@ -85,11 +86,11 @@ class Storage(object):
             if not contentDict:
                 pass
             elif len(contentDict) == 1:
-                for k, v in contentDict.items():
+                for k, v in list(contentDict.items()):
                     self.write_file(noteFullPath, v, os.path.splitext(k)[1])
             else:
                 if not exists(join(nbName, nName)): os.mkdir(join(nbName, nName))
-                for k, v in contentDict.iteritems():
+                for k, v in contentDict.items():
                     self.write_file(noteFullPath+[k], v, '') # ok, this looks strange, ext is included in k
         else:
             if contentDict: # create folder
@@ -128,7 +129,7 @@ class Storage(object):
         try:
             with open('user.cfg') as f: j = json.loads(f.read())
             if len(j) != 7: raise Exception
-            for k in j.keys():
+            for k in list(j.keys()):
                 if k not in ('token', 'is-special-token', 'sandbox', 'notebooks',
                         'is-international', 'expire-time', 'last-update'):
                     raise Exception
@@ -156,7 +157,7 @@ class Storage(object):
                     continue# Mac .DS_Store ignorance
                 size = 0
                 wrongFolders, attas = os.walk(join(notebook, folderNote)).next()[1:]
-                if filter(lambda x: re.compile('.+\.(md|html)').match(x), attas) == []:
+                if [x for x in attas if re.compile('.+\.(md|html)').match(x)] == []:
                     r.append((self.__str_l2c(join(notebook, folderNote)), 3))
                 for atta in attas: size += os.path.getsize(join(notebook, folderNote, atta))
                 for wrongFolder in wrongFolders:

@@ -6,7 +6,7 @@ import evernote.edam.notestore.NoteStore as NoteStore
 from evernote.edam.error.ttypes import EDAMUserException
 from evernote.api.client import EvernoteClient
 
-from storage import Storage
+from .storage import Storage
 
 class EvernoteController(object):
     def __init__(self, token, isSpecialToken = False, sandbox = False, isInternational = False, notebooks = None):
@@ -33,7 +33,7 @@ class EvernoteController(object):
         notebook.name = noteFullPath
         try:
             notebook = self.noteStore.createNotebook(notebook)
-        except EDAMUserException, e:
+        except EDAMUserException as e:
             if e.errorCode == 10 and e.parameter == 'Notebook.name':
                 self.storage.update(self.token, self.noteStore)
                 return True
@@ -59,7 +59,7 @@ class EvernoteController(object):
         note.notebookGuid = self.get([notebook]).guid
         if fileDict:
             note.resources = []
-            for fileName, fileBytes in fileDict.iteritems():
+            for fileName, fileBytes in fileDict.items():
                 fileData = Types.Data()
                 fileData.bodyHash = self._md5(fileBytes)
                 fileData.size = len(fileBytes)
@@ -99,7 +99,7 @@ class EvernoteController(object):
         note.content += content
         if fileDict:
             note.resources = []
-            for fileName, fileBytes in fileDict.iteritems():
+            for fileName, fileBytes in fileDict.items():
                 fileData = Types.Data()
                 fileData.bodyHash = self._md5(fileBytes)
                 fileData.size = len(fileBytes)

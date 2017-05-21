@@ -2,9 +2,9 @@ import os, time, re
 
 import chardet
 
-from local import Storage as LocalStorage
-from local import html2text, markdown
-from evernoteapi.controller import EvernoteController
+from .local import Storage as LocalStorage
+from .local import html2text, markdown
+from .evernoteapi.controller import EvernoteController
 
 class Controller(object):
     def __init__(self):
@@ -50,7 +50,7 @@ class Controller(object):
         r = []
         fileDict = self.ls.get_file_dict()
         noteDict = self.es.get_note_dict()
-        for nbName, lNotes in fileDict.items():
+        for nbName, lNotes in list(fileDict.items()):
             eNotes = noteDict.get(nbName)
             if eNotes is None: # notebook exists locally not online
                 r.append(([nbName], 0))
@@ -77,7 +77,7 @@ class Controller(object):
             eNotes = [n for i, n in enumerate(eNotes) if i not in delIndex]
             for eNote in eNotes: r.append(([nbName, eNote[0]], 0)) # note exists online not locally
             del noteDict[nbName]
-        for nbName in noteDict.keys(): r.append(([nbName], 0))
+        for nbName in list(noteDict.keys()): r.append(([nbName], 0))
         self.changesList = r
         return r
     def get_changes(self):
@@ -89,11 +89,11 @@ class Controller(object):
         noteDict = self.es.get_note_dict()
         invalidNoteList = []
         def _download_note(noteFullPath):
-            if (any(c in ''.join(noteFullPath).decode('utf8') for c in u'\\/:*?"<>|\xa0')
+            if (any(c in ''.join(noteFullPath).decode('utf8') for c in '\\/:*?"<>|\xa0')
                     or noteFullPath[1] == '.DS_Store'):
                 invalidNoteList.append(noteFullPath)
                 return
-            print(('Downloading '+'/'.join(noteFullPath)).decode('utf8'))
+            print((('Downloading '+'/'.join(noteFullPath)).decode('utf8')))
             if self.es.get(noteFullPath) is None: # delete note if is deleted online
                 self.ls.write_note(noteFullPath, {})
                 return
@@ -114,7 +114,7 @@ class Controller(object):
         for noteFullPath, status in self.__get_changes(update):
             if status not in (-1, 0):
                 continue
-            elif (any(c in ''.join(noteFullPath).decode('utf8') for c in u'\\/:*?"<>|\xa0')
+            elif (any(c in ''.join(noteFullPath).decode('utf8') for c in '\\/:*?"<>|\xa0')
                     or noteFullPath[0] == '.DS_Store'):
                 invalidNoteList.append(noteFullPath)
                 continue
@@ -141,14 +141,14 @@ class Controller(object):
                     content = 'Upload encode failed, I\'m sorry! Please contact i7meavnktqegm1b@qq.com with this file.'
             return content
         def _upload_files(noteFullPath, attachmentDict):
-            print(('Uploading '+'/'.join(noteFullPath)).decode('utf8'))
+            print((('Uploading '+'/'.join(noteFullPath)).decode('utf8')))
             nbName, nName = noteFullPath
             if not attachmentDict:
                 self.ec.delete_note(noteFullPath)
-            elif nName + '.md' in attachmentDict.keys():
+            elif nName + '.md' in list(attachmentDict.keys()):
                 content = encode_content(attachmentDict[nName+'.md']).decode('utf8')
                 self.ec.update_note(noteFullPath, markdown(content).encode('utf8'), attachmentDict)
-            elif nName + '.html' in attachmentDict.keys():
+            elif nName + '.html' in list(attachmentDict.keys()):
                 content = encode_content(attachmentDict[nName+'.html'])
                 del attachmentDict[nName + '.html']
                 self.ec.update_note(noteFullPath, content, attachmentDict)

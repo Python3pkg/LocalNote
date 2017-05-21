@@ -70,19 +70,19 @@ class Storage():
         return r.get('notebook')
     def get_note_dict(self):
         noteDict = {}
-        for nbName, nb in self.storage.iteritems():
+        for nbName, nb in self.storage.items():
             noteDict[nbName] = []
-            for nName, n in nb['notes'].iteritems():
+            for nName, n in nb['notes'].items():
                 noteDict[nbName].append((nName, n.updated / 1000))
         return noteDict
     def show_notebook(self):
-        for bn, nb in self.storage.items(): print_line(bn)
+        for bn, nb in list(self.storage.items()): print_line(bn)
     def show_notes(self, notebook = None):
-        for bn, nb in self.storage.items():
+        for bn, nb in list(self.storage.items()):
             if not notebook: print_line(bn + ':')
             if not notebook or bn == notebook:
-                for nn, ns in nb['notes'].items():
+                for nn, ns in list(nb['notes'].items()):
                     print_line(('' if notebook else '    ')+nn)
 def print_line(s):
     t = sys.getfilesystemencoding()
-    print s.decode('UTF-8').encode(t)
+    print(s.decode('UTF-8').encode(t))
